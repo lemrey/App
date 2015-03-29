@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">App</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_scanner">ScannerActivity</string>
+    <string name="scanning">Scanning for objects</string>
+    <string name="select_device">Select an object</string>
+    <string name="title_activity_object_manager">ObjectManagerActivity</string>
+    <string name="object_instructions">Tap an object to see its features</string>
+    <string name="title_device_list">Devices</string>
+    <string name="title_device_detail">Device Detail</string>
+    <string name="title_activity_rule_manager">Manage rules</string>
+    <string name="title_activity_rule_creator">RuleCreatorActivity</string>
+
+
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
+</resources>
