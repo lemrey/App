@@ -46,12 +46,16 @@ public class ScannerActivity extends ActionBarActivity {
 				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 				// If it's already paired or listed, skip it
 				if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
-					int  rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI,Short.MIN_VALUE);
-					String item = device.getName() + "\n" + device.getAddress();
-					// Avoid duplicates
-					if (mListAdapter.getPosition(item) == -1) {
-						mListAdapter.add(item);
-					}
+					//int  rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI,Short.MIN_VALUE);
+					// Only show discovered devices not already in the DeviceRegister
+					//TODO: devices in the DeviceRegister are paired and thus skipped
+					//if (!DeviceRegister.deviceExists(device.getAddress())) {
+						String item = device.getName() + "\n" + device.getAddress();
+						// Avoid duplicates
+						if (mListAdapter.getPosition(item) == -1) {
+							mListAdapter.add(item);
+						}
+					//}
 				}
 			} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
 				setTitle(R.string.select_device);
@@ -97,7 +101,10 @@ public class ScannerActivity extends ActionBarActivity {
 		// If there are paired devices, add each one to the list
 		if (pairedDevices.size() > 0) {
 			for (BluetoothDevice device : pairedDevices) {
-				mListAdapter.add(device.getName() + "\n" + device.getAddress());
+				// Skip bonded devices already added to the DeviceRegister
+				if (!DeviceRegister.deviceExists(device.getAddress())) {
+					mListAdapter.add(device.getName() + "\n" + device.getAddress());
+				}
 			}
 		}
 	}
@@ -170,8 +177,10 @@ public class ScannerActivity extends ActionBarActivity {
 				String deviceName = text.substring(0, text.length() - 18);
 				// Get the MAC address (last 17 chars)
 				String deviceAddr = text.substring(text.length() - 17);
-				// Register the device
-				DeviceRegister.addDevice(deviceName, deviceAddr);
+				// Register the device if it is not registered
+				if (!DeviceRegister.deviceExists(deviceAddr)) {
+					DeviceRegister.addDevice(deviceName, deviceAddr);
+				}
 			}
 		}
 
