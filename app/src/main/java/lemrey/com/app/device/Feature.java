@@ -23,6 +23,7 @@ public class Feature {
 
 	/**
 	 * Parses features as events from a JSONArray
+	 *
 	 * @param array a JSONArray of features
 	 * @return a List of event features
 	 */
@@ -44,5 +45,19 @@ public class Feature {
 			features.add(ft);
 		}
 		return features;
+	}
+
+	/**
+	 * We want to override the following to prevents duplicates in Set collections
+	 */
+
+	@Override
+	public boolean equals(Object o) {
+		return o instanceof Feature && name.equals(((Feature) o).name);
+	}
+
+	@Override
+	public int hashCode() {
+		return name.hashCode();
 	}
 }
