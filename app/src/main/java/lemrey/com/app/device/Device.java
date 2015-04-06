@@ -1,45 +1,30 @@
 package lemrey.com.app.device;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Device {
 
 	private static final String TAG = "Device";
-
-	public static enum ConnectionStatus {
-		DISCONNECTED,
-		CONNECTING,
-		CONNECTED
-	}
-
 	/**
 	 * The MAC address of the remote device.
 	 */
 	public final String mAddress;
 	private final String mBluetoothName;
+	private final Set<Feature> mFeatures;
 	private String mSmartName = null;
-
-	//private int mRSSI;
 
 	/**
 	 * The device connection status.
 	 */
 	private ConnectionStatus mStatus;
-
-	/*private List<Event> mEvents;
-	private List<Command> mCommands;*/
-
-	private List<Feature> mFeatures;
-
-
 	public Device(String deviceName, String deviceAddress) {
 		mBluetoothName = deviceName;
 		mAddress = deviceAddress;
 		mStatus = ConnectionStatus.DISCONNECTED;
-		/*mEvents = new ArrayList<>();
-		mCommands = new ArrayList<>();*/
-		mFeatures = new ArrayList<>();
+		mFeatures = new HashSet<>();
 	}
 
 	public String name() {
@@ -94,7 +79,7 @@ public class Device {
 	}
 
 	public List<Feature> features() {
-		return mFeatures;
+		return new ArrayList<>(mFeatures);
 	}
 
 	@SafeVarargs
@@ -133,8 +118,12 @@ public class Device {
 
 	@Override
 	public int hashCode() {
-		int hash = 5;
-		hash = 89 * hash + (this.mAddress != null ? this.mAddress.hashCode() : 0);
-		return hash;
+		return mAddress.hashCode();
+	}
+
+	public static enum ConnectionStatus {
+		DISCONNECTED,
+		CONNECTING,
+		CONNECTED
 	}
 }
