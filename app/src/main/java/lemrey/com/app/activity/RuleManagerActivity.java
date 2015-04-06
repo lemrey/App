@@ -22,19 +22,16 @@ public class RuleManagerActivity extends ActionBarActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_rule_manager);
 
-		ExpandableListView listRules = (ExpandableListView) findViewById(R.id.listRules);
+		final ExpandableListView listRules = (ExpandableListView) findViewById(R.id.listRules);
 		mRuleAdapter = new RuleAdapter(this, RuleBook.rules());
 		listRules.setAdapter(mRuleAdapter);
-
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
 		mRuleAdapter.notifyDataSetChanged();
-		//Log.d("Rulemanager", "total rulez " + RuleBook.rules().size());
 	}
-
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -52,8 +49,6 @@ public class RuleManagerActivity extends ActionBarActivity {
 
 		//noinspection SimplifiableIfStatement
 		switch (id) {
-			case  R.id.action_settings:
-				return true;
 			case R.id.menu_add:
 				onButtonNewRuleClicked(null);
 		}
