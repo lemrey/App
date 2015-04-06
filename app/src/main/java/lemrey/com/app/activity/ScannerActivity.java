@@ -11,8 +11,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.util.SparseBooleanArray;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -28,11 +26,6 @@ import lemrey.com.app.R;
 public class ScannerActivity extends ActionBarActivity {
 
 	private final String TAG = "ScannerActivity";
-
-	private BluetoothAdapter mBluetoothAdapter;
-	private ArrayAdapter<String> mListAdapter;
-	private SwipeRefreshLayout mSwipeRefreshLayout;
-
 	/**
 	 * The BroadcastReceiver that listens for discovered devices and changes the title
 	 * when discovery is finished
@@ -61,6 +54,18 @@ public class ScannerActivity extends ActionBarActivity {
 				setTitle(R.string.select_device);
 				mSwipeRefreshLayout.setRefreshing(false);
 			}
+		}
+
+	};
+	private BluetoothAdapter mBluetoothAdapter;
+	private ArrayAdapter<String> mListAdapter;
+	private SwipeRefreshLayout mSwipeRefreshLayout;
+	// The on-click listener for all devices in the list
+	private AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
+
+		public void onItemClick(AdapterView<?> av, View v, int arg2, long arg3) {
+			CheckedTextView item = (CheckedTextView) v;
+			item.setChecked(item.isChecked());
 		}
 
 	};
@@ -110,38 +115,6 @@ public class ScannerActivity extends ActionBarActivity {
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.menu_scanner, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-
-		//noinspection SimplifiableIfStatement
-		if (id == R.id.action_settings) {
-			return true;
-		}
-
-		return super.onOptionsItemSelected(item);
-	}
-
-	// The on-click listener for all devices in the list
-	private AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
-
-		public void onItemClick(AdapterView<?> av, View v, int arg2, long arg3) {
-			CheckedTextView item = (CheckedTextView) v;
-			item.setChecked(item.isChecked());
-		}
-
-	};
-
-	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		Log.d(TAG, "onDestroy()");
@@ -165,9 +138,8 @@ public class ScannerActivity extends ActionBarActivity {
 	}
 
 	public void onButtonAddClicked(View v) {
-		//DeviceRegister deviceRegister = new DeviceRegister();
-		ListView list = (ListView) findViewById(R.id.listDevices);
-		SparseBooleanArray checkedItemPositions = list.getCheckedItemPositions();
+		final ListView list = (ListView) findViewById(R.id.listDevices);
+		final SparseBooleanArray checkedItemPositions = list.getCheckedItemPositions();
 
 		for (int i = 0; i < checkedItemPositions.size(); i++) {
 			if (checkedItemPositions.valueAt(i)) {
@@ -184,8 +156,8 @@ public class ScannerActivity extends ActionBarActivity {
 			}
 		}
 
-		Intent intent;
-		intent = new Intent(getApplicationContext(), ObjectManagerActivity.class);
+		final Intent intent;
+		intent = new Intent(this, ObjectManagerActivity.class);
 		startActivity(intent);
 	}
 
