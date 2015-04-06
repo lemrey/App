@@ -2,16 +2,19 @@ package lemrey.com.app.service;
 
 import android.app.Service;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -24,11 +27,16 @@ import lemrey.com.app.rule.RuleBook;
 public class ConnectionService extends Service {
 
 	private static final String TAG = "ConnectionService";
-	//TODO: concurrent access in stopThread
 	private final static Set<ConnectionThread> mConnections = new HashSet<>();
 	private static boolean mIsRunning = false;
-	private final MessageHandler mHandler = new MessageHandler();
-	private DeviceCallback mConnectionCallback;
+	private final MessageHandler mHandler;
+	private final HandlerThread mHandlerThread;
+
+	public ConnectionService() {
+		mHandlerThread = new HandlerThread("events");
+		mHandlerThread.start();
+		mHandler = new MessageHandler(mHandlerThread.getLooper());
+	}
 
 	public static boolean isRunning() {
 		return mIsRunning;
@@ -38,13 +46,13 @@ public class ConnectionService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		//Log.d(TAG, "onStartCommand");
 		mIsRunning = true;
+		startConnections();
 		return START_STICKY;
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		//Log.d(TAG, "On Destroy");
 		mIsRunning = false;
 		// Shutdown threads
 		for (ConnectionThread thread : mConnections) {
@@ -54,42 +62,53 @@ public class ConnectionService extends Service {
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		//Log.d(TAG, "onBind");
-		return new EventServiceBinder();
+		return null;
 	}
 
-	@Override
-	public boolean onUnbind(Intent intent) {
-		//Log.d(TAG, "onUnbind");
-		// We return true to allow onRebind()
-		return true;
+
+	/**
+	 * Starts connections to all known devices
+	 */
+	private void startConnections() {
+		Log.d(TAG, "Starting connections!");
+		for (Device device : DeviceRegister.devices()) {
+			if (!device.isConnected()) {
+				device.setConnecting();
+				startConnection(device.mAddress);
+			}
+		}
 	}
 
 	/**
-	 * Request to start a connection to a device.
-	 * A new thread is created for the connection and its handler saved in mConnections.
+	 * Starts a connection to a device.
+	 * A new thread is created for the connection and its handler added in mConnections.
 	 *
 	 * @param deviceAddress the device address
 	 */
 	private void startConnection(String deviceAddress) {
 		if (!mConnections.contains(deviceAddress)) {
-			ConnectionThread thread = new ConnectionThread(deviceAddress, mHandler);
+			final ConnectionThread thread = new ConnectionThread(deviceAddress, mHandler);
 			mConnections.add(thread);
 			thread.start();
 		}
 	}
 
-	public void startConnections(DeviceCallback callback) {
-		mConnectionCallback = callback;
-		Log.d(TAG, "Starting connections!");
-		for (Device device : DeviceRegister.devices()) {
-			if (!device.isConnected()) {
-				startConnection(device.mAddress);
-				device.setConnecting();
+	/**
+	 * Removes the Thread for a given device
+	 */
+	private void stopThread(String deviceAddr) {
+		Log.d(TAG, "Stopping thread " + deviceAddr + " " + mConnections.size());
+		final Iterator<ConnectionThread> threadIterator = mConnections.iterator();
+		while (threadIterator.hasNext()) {
+			ConnectionThread thread = threadIterator.next();
+			//noinspection EqualsBetweenInconvertibleTypes
+			if (thread.equals(deviceAddr) && thread.isAlive()) {
+				threadIterator.remove();
 			}
 		}
 	}
 
+	// TODO: refactor as Rule, Param
 	private void sendCommand(String deviceAddr, String cmdName, String param) {
 		JSONObject jsonData = new JSONObject();
 		JSONObject jsonBody = new JSONObject();
@@ -126,24 +145,8 @@ public class ConnectionService extends Service {
 		}
 	}
 
-	public void writeSomething(String data) {
-		for (ConnectionThread t : mConnections) {
-			t.write(data);
-		}
-	}
+	private void processPong(String address) {
 
-	/**
-	 * Closes the actual connection to a device by interrupting its thread.
-	 * Removes the Thread from mConnections.
-	 */
-	private void stopThread(String deviceAddr) {
-		Log.d(TAG, "Stopping thread " + deviceAddr);
-		for (ConnectionThread thread : mConnections) {
-			if (thread.equals(deviceAddr) && !thread.isInterrupted()) {
-				thread.interrupt();
-				mConnections.remove(thread);
-			}
-		}
 	}
 
 	private void processEvent(String address, JSONObject jsonEvent) {
@@ -154,6 +157,7 @@ public class ConnectionService extends Service {
 		final Rule rule = RuleBook.match(address, eventName);
 		if (rule != null) {
 			Log.d(TAG, "rule match! sending cmd");
+			// TODO: should be Rule, Param
 			sendCommand(rule.destAddr, rule.cmd.name, param);
 		}
 	}
@@ -170,7 +174,9 @@ public class ConnectionService extends Service {
 					List<Feature> events = Feature.parseEvents(jsonData.getJSONArray("events"));
 					List<Feature> cmds = Feature.parseCommands(jsonData.getJSONArray("commands"));
 					device.addFeatures(events, cmds);
-					mConnectionCallback.onPayloadReceived(device.mAddress);
+					//mConnectionCallback.onPayloadReceived(device.mAddress);
+					final Intent intent = new Intent("bing");
+					sendBroadcast(intent);
 				}
 				break;
 				case EVENT: {
@@ -185,38 +191,31 @@ public class ConnectionService extends Service {
 		}
 	}
 
-	public final class EventServiceBinder extends Binder {
-
-		public ConnectionService getService() {
-			return ConnectionService.this;
-		}
-
-	}
 
 	public final class MessageHandler extends Handler {
 
-		public void handleMessage(Message msg) {
+		public MessageHandler(Looper looper) {
+			super(looper);
+		}
 
-			String addr = (String) msg.obj;
-			Device dev = DeviceRegister.device(addr);
+		public void handleMessage(Message msg) {
+			final String addr = (String) msg.obj;
+			final Device dev = DeviceRegister.device(addr);
 			switch (msg.what) {
 				case 0: {   // DEVICE CONNECTED
 					// Change device status to connected
 					dev.setConnected();
-					if (mConnectionCallback != null) {
-						mConnectionCallback.onDeviceConnected(addr);
-					}
+					final Intent intent = new Intent("bing");
+					LocalBroadcastManager.getInstance(ConnectionService.this).sendBroadcast(intent);
 				}
 				break;
 				case 1: {   // DEVICE DISCONNECTED
 					// Stop and remove thread
 					stopThread(addr);
-					//mConnections.remove(addr);
 					// Change device status to disconnected
 					dev.setDisconnected();
-					if (mConnectionCallback != null) {
-						mConnectionCallback.onDeviceDisconnected(addr);
-					}
+					final Intent intent = new Intent("bing");
+					LocalBroadcastManager.getInstance(ConnectionService.this).sendBroadcast(intent);
 				}
 				break;
 				case 2: {   // INCOMING DATA
