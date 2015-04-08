@@ -1,0 +1,19 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="lemrey.com.app.activity.RuleManagerActivity">
+
+    <item
+        android:id="@+id/menu_find"
+        android:icon="@drawable/ic_action_search"
+        android:title="@string/find"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/menu_add_rule"
+        android:icon="@drawable/ic_action_rules"
+        android:title="@string/find"
+        android:visible="false"
+        app:showAsAction="ifRoom"/>
+
+</menu>
