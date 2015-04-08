@@ -1,82 +1,66 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
-              android:orientation="vertical">
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
 
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="22dp"
+        android:padding="22dp"
         android:paddingBottom="22dp"
         android:paddingLeft="22dp"
         android:paddingRight="22dp"
-        android:padding="22dp">
+        android:paddingTop="22dp">
 
         <TextView
             android:id="@+id/labelWhen"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="32sp"
-            android:text="when "
             android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"/>
+            android:layout_alignParentStart="true"
+            android:text="if "
+            android:textSize="32sp"/>
 
         <TextView
             android:id="@+id/labelEvent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="32sp"
-            android:textColor="#0040fa"
-            android:layout_toRightOf="@id/labelWhen"/>
-
-
-        <!--<ImageButton
-            android:id="@+id/imageButtonWhen"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/labelWhen"
-            android:src="@drawable/ic_action_new"
-            />-->
+            android:background="#ff5e8ae5"
+            android:textColor="#0040fa"
+            android:textSize="32sp"/>
 
         <TextView
             android:id="@+id/labelThen"
-            android:text="then "
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="32sp"
             android:layout_below="@id/labelEvent"
+            android:text="then "
+            android:textSize="32sp"
             />
 
         <TextView
             android:id="@+id/labelCommand"
-            android:textColor="#fff06464"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:textSize="32sp"
-            android:layout_toRightOf="@id/labelThen"
             android:layout_below="@id/labelEvent"
+            android:layout_toRightOf="@id/labelThen"
+            android:textColor="#fff06464"
+            android:textSize="32sp"
             />
 
         <Button
+            android:id="@+id/buttonFinish"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Finish"
-            android:id="@+id/buttonFinish"
             android:layout_below="@+id/labelCommand"
             android:layout_marginTop="32dp"
+            android:text="Finish"
             />
 
-        <!--<ImageButton
-            android:id="@+id/imageButtonThen"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/labelThen"
-            android:layout_below="@id/imageButtonWhen"
-            android:src="@drawable/ic_action_new"/>
-            -->
-
-        </RelativeLayout>
+    </RelativeLayout>
 
 
     <android.support.v4.view.ViewPager
@@ -96,4 +80,5 @@
             android:textColor="#fff"/>
 
     </android.support.v4.view.ViewPager>
+
 </LinearLayout>
