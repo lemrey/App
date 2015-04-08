@@ -19,20 +19,17 @@ import java.util.UUID;
  */
 public final class ConnectionThread extends Thread {
 
+	public final String mAddress;
 	private final String TAG = "ConnectionThread";
-
-	private final byte STX = (byte) 2;
-	private final byte ETX = (byte) 3;
 	private final UUID MY_UUID = UUID
 			.fromString("00001101-0000-1000-8000-00805F9B34FB");
-
-	public final String mAddress;
+	private final byte STX = (byte) 2;
+	private final byte ETX = (byte) 3;
+	// The handler of the thread that started us
+	private final Handler mParentHandler;
 	private BluetoothSocket mBluetoothSocket;
 	private InputStream mInputStream;
 	private OutputStream mOutputStream;
-
-	// The handler of the thread that started us
-	private final Handler mParentHandler;
 
 
 	public ConnectionThread(String address, Handler callback) {
@@ -41,8 +38,9 @@ public final class ConnectionThread extends Thread {
 		mParentHandler = callback;
 	}
 
+
 	private void connect(String address) throws IOException {
-		Log.d(TAG, "Connecting to " + address);
+		//Log.d(TAG, "Thread " + getId() + " connecting to " + address);
 
 		BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		if (!mBluetoothAdapter.isEnabled()) {
@@ -55,11 +53,11 @@ public final class ConnectionThread extends Thread {
 
 		try {
 			mBluetoothSocket.connect();
-			Log.d(TAG, "Connection established");
+			Log.d(TAG, "Connection established on thread " + getId());
 			// Invoke connection callback
 			mParentHandler.obtainMessage(0, mAddress).sendToTarget();
 		} catch (IOException ex) {
-			String error = "Service discovery failed";
+			/*String error = "Service discovery failed";
 			if (ex.getMessage().equals(error)) {
 				try {
 					Log.d(TAG, "Caught a recoverable error: retrying");
@@ -71,12 +69,17 @@ public final class ConnectionThread extends Thread {
 				} catch (InterruptedException ex1) {
 					throw new IOException();
 				}
-			}
+			}*/
+			throw new IOException();
 		}
 	}
 
 	public void write(String msg) {
 		byte[] data;
+		if (!mBluetoothSocket.isConnected()) {
+			Log.d(TAG, "Thread " + getId() + " not connected, will not write!");
+			return;
+		}
 		try {
 			data = msg.getBytes("UTF8");
 		} catch (UnsupportedEncodingException ex) {
@@ -88,8 +91,6 @@ public final class ConnectionThread extends Thread {
 			mOutputStream.write(data);
 			mOutputStream.write(ETX);
 			Log.d(TAG, "Writing " + msg + " to " + mAddress);
-			//ConsoleActivity.logSent(Event.prettyPrint(msg));
-			//mOutputStream.flush();
 		} catch (IOException ex) {
 			Log.d(TAG, "Couldn't write bytes: " + ex.getMessage());
 		}
@@ -97,19 +98,18 @@ public final class ConnectionThread extends Thread {
 
 	@Override
 	public void run() {
-		Log.d(TAG, "Thread " + mAddress + " running");
+		Log.d(TAG, "Thread " + getId() + " running (" + mAddress + ")");
 
 		int readBufferPos = 0;
 		boolean isReading = false;
 		byte[] readBuffer = new byte[1024];
-
-		int loopCount = 0;
 
 		try {
 			// TODO: we are calling the callback in another function
 			connect(mAddress);
 			mInputStream = mBluetoothSocket.getInputStream();
 			mOutputStream = mBluetoothSocket.getOutputStream();
+			//setConnected();
 			sendPing();
 		} catch (IOException ex) {
 			Log.d(TAG, "Failed to connect: " + ex.getMessage());
@@ -117,7 +117,6 @@ public final class ConnectionThread extends Thread {
 		}
 
 		while (!isInterrupted()) {
-			loopCount++;
 			try {
 				// read() is blocking!
 				int character = mInputStream.read();
@@ -133,9 +132,8 @@ public final class ConnectionThread extends Thread {
 						}
 					} else {
 						String data = new String(readBuffer, 0, readBufferPos, "US-ASCII");
-						//mDeviceCallback.onDataReceived(data);
-						//Log.d(TAG, "Received " + data);
-						//parseData(data);
+
+						// Send callback
 						Message msg = mParentHandler.obtainMessage(2, mAddress);
 						Bundle bundle = new Bundle();
 						bundle.putString("data", data);
@@ -154,22 +152,35 @@ public final class ConnectionThread extends Thread {
 			}
 		}
 
-		interrupt();
-		Log.d(TAG, "Thread stopped, exiting.");
-		Log.d(TAG, "Executed " + loopCount + " times");
+		//interrupt();
+		Log.d(TAG, "Thread " + getId() + " stopped, exiting.");
 
 		// Cleanup
 		if (mBluetoothSocket != null) {
 			try {
 				mBluetoothSocket.close();
 			} catch (IOException e) {
+				Log.d(TAG, "Failed to clean up socket: " + e.getMessage());
+			}
+		}
+		if (mInputStream != null) {
+			try {
+				mInputStream.close();
+			} catch (IOException e) {
 				e.printStackTrace();
-				Log.d(TAG, "Failed to clean up socket.");
+			}
+		}
+		if (mOutputStream != null) {
+			try {
+				mOutputStream.close();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 
-		// Invoke connection callback
+		// Invoke (dis)connection callback
 		mParentHandler.obtainMessage(1, mAddress).sendToTarget();
+		Log.d(TAG, getId() + " is out of this shit");
 	}
 
 	private void sendPing() {
