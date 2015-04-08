@@ -25,6 +25,7 @@ public class RuleManagerActivity extends ActionBarActivity {
 		final ExpandableListView listRules = (ExpandableListView) findViewById(R.id.listRules);
 		mRuleAdapter = new RuleAdapter(this, RuleBook.rules());
 		listRules.setAdapter(mRuleAdapter);
+		listRules.setEmptyView(findViewById(R.id.empty));
 	}
 
 	@Override
