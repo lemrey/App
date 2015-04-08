@@ -11,8 +11,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -47,7 +45,7 @@ public class RuleCreatorActivity extends ActionBarActivity implements
 	 * The {@link ViewPager} that will host the section contents.
 	 */
 	ViewPager mViewPager;
-	private DeviceFeatureAdapter mDeviceFeatureAdapter;
+	//private DeviceFeatureAdapter mDeviceFeatureAdapter;
 	private Button mButtonFinish;
 	private int count = 0;
 	private Feature event;
@@ -74,59 +72,34 @@ public class RuleCreatorActivity extends ActionBarActivity implements
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.menu_rule_creator, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-
-		//noinspection SimplifiableIfStatement
-		if (id == R.id.action_settings) {
-			return true;
-		}
-
-		return super.onOptionsItemSelected(item);
-	}
-
-
-	@Override
 	public void onClick(View view) {
 		Rule rule = new Rule(srcAddr, event, destAddr, cmd);
 		RuleBook.addRule(rule);
-		Log.d("rulezz", "rule created! " + srcAddr + event.name + destAddr + cmd.name);
+		//Log.d("rulezz", "rule created! " + srcAddr + event.name + destAddr + cmd.name);
 		finish();
 	}
 
 	@Override
 	public void onItemClicked(int item, int id) {
-		Log.d("Callback", "you clicked " + item + " id " + id);
+		//Log.d("Callback", "you clicked " + item + " id " + id);
 		final Device dev = DeviceRegister.get(item);
-		if (count == 0) {
-			count++;
-			PagerTabStrip tabStrip = (PagerTabStrip) mViewPager.findViewById(R.id.pager_tab_strip);
-			tabStrip.setBackgroundColor(Color.rgb(240, 100, 100));
-
+		if (count++ == 0) {
 			srcAddr = dev.mAddress;
 			event = dev.events().get(id);
-			TextView labelEvent = (TextView) findViewById(R.id.labelEvent);
+			final TextView labelEvent = (TextView) findViewById(R.id.labelEvent);
 			labelEvent.setText(event.name);
-
+			labelEvent.setBackgroundColor(Color.parseColor("#EEEEEE"));
+			final PagerTabStrip tabStrip = (PagerTabStrip) mViewPager.findViewById(R.id.pager_tab_strip);
+			tabStrip.setBackgroundColor(Color.rgb(240, 100, 100));
+			final TextView labelCmd = (TextView) findViewById(R.id.labelCommand);
+			labelCmd.setBackgroundColor(Color.rgb(240, 100, 100));
 			mSectionsPagerAdapter.changeAdapters(event.paramType);
-
 		} else {
 			destAddr = dev.mAddress;
 			cmd = mSectionsPagerAdapter.mFragments.get(item).mFeaturesShown.get(id);
-
-			TextView labelEvent = (TextView) findViewById(R.id.labelCommand);
-			labelEvent.setText(cmd.name);
-
+			final TextView labelCmd = (TextView) findViewById(R.id.labelCommand);
+			labelCmd.setText(cmd.name);
+			labelCmd.setBackgroundColor(Color.parseColor("#EEEEEE"));
 			mButtonFinish.setEnabled(true);
 			mButtonFinish.setBackgroundColor(Color.rgb(155, 225, 180));
 		}
@@ -142,9 +115,7 @@ public class RuleCreatorActivity extends ActionBarActivity implements
 		private ListClickCallback callback;
 		private ListView mListView;
 
-		public PlaceholderFragment() {
-			;
-		}
+		public PlaceholderFragment() {}
 
 		/**
 		 * Returns a new instance of this fragment for the given section
@@ -164,17 +135,6 @@ public class RuleCreatorActivity extends ActionBarActivity implements
 			callback = (ListClickCallback) activity;
 		}
 
-		public void changeAdapter(FeatureParam filter) {
-			mFeaturesShown.clear();
-			for (Feature ft : DeviceRegister.cmdsForDeviceId(mDeviceIndex)) {
-				if (ft.paramType.equals(filter)) mFeaturesShown.add(ft);
-			}
-
-			mListView.setAdapter(new DeviceFeatureAdapter(getActivity(),
-					R.layout.list_objects_entry2, mFeaturesShown));
-		}
-
-
 		@Override
 		public View onCreateView(LayoutInflater inflater, final ViewGroup container,
 		                         Bundle savedInstanceState) {
@@ -193,6 +153,16 @@ public class RuleCreatorActivity extends ActionBarActivity implements
 			});
 
 			return rootView;
+		}
+
+		public void changeAdapter(FeatureParam filter) {
+			mFeaturesShown.clear();
+			for (Feature ft : DeviceRegister.cmdsForDeviceId(mDeviceIndex)) {
+				if (ft.paramType.equals(filter)) mFeaturesShown.add(ft);
+			}
+
+			mListView.setAdapter(new DeviceFeatureAdapter(getActivity(),
+					R.layout.list_objects_entry2, mFeaturesShown));
 		}
 	}
 
@@ -231,10 +201,10 @@ public class RuleCreatorActivity extends ActionBarActivity implements
 
 		@Override
 		public CharSequence getPageTitle(int position) {
-			if (DeviceRegister.devices().size() != 0)
+			//if (DeviceRegister.devices().size() != 0)
 				return DeviceRegister.get(position).name();
-			else
-				return "no";
+			//else
+				//return "no";
 		}
 	}
 
