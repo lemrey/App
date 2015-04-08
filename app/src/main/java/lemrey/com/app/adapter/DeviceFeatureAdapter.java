@@ -21,8 +21,6 @@ public class DeviceFeatureAdapter extends ArrayAdapter<Feature> {
 	private final Context mContext;
 	private final List<Feature> mFeatures;
 	private final LayoutInflater mLayoutInflater;
-	/*private FeatureType mFilterType;
-	private FeatureParam mFilterParam;*/
 
 	public DeviceFeatureAdapter(Context context, int resource, List<Feature> features) {
 		super(context, resource, features);
@@ -31,11 +29,6 @@ public class DeviceFeatureAdapter extends ArrayAdapter<Feature> {
 		mLayoutInflater = (LayoutInflater) context
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	}
-
-	/*public void setFilter(FeatureType type, FeatureParam param) {
-		mFilterType = type;
-		mFilterParam = param;
-	}*/
 
 	@Override
 	public View getView(int position, View view, ViewGroup parent) {
@@ -47,13 +40,13 @@ public class DeviceFeatureAdapter extends ArrayAdapter<Feature> {
 		final Drawable icon;
 		switch (ft.paramType) {
 			case NUMBER:
-				icon = mContext.getResources().getDrawable(R.drawable.ic_dice);
+				icon = mContext.getResources().getDrawable(R.drawable.ic_pi);
 				break;
 			case TEXT:
 				icon = mContext.getResources().getDrawable(R.drawable.ic_paperplane);
 				break;
 			default:
-				icon = mContext.getResources().getDrawable(R.drawable.ic_bubble);
+				icon = mContext.getResources().getDrawable(R.drawable.ic_signal);
 				break;
 		}
 		mContext.getResources().getDrawable(R.drawable.ic_action_new);
