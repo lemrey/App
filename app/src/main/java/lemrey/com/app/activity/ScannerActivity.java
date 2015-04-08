@@ -27,28 +27,24 @@ public class ScannerActivity extends ActionBarActivity {
 
 	private final String TAG = "ScannerActivity";
 	/**
-	 * The BroadcastReceiver that listens for discovered devices and changes the title
+	 * A BroadcastReceiver that listens for discovered devices and changes the title
 	 * when discovery is finished
 	 */
 	private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			String action = intent.getAction();
+			final String action = intent.getAction();
 			if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+				final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 				// If it's already paired or listed, skip it
 				if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
 					//int  rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI,Short.MIN_VALUE);
-					// Only show discovered devices not already in the DeviceRegister
-					//TODO: devices in the DeviceRegister are paired and thus skipped
-					//if (!DeviceRegister.deviceExists(device.getAddress())) {
-						String item = device.getName() + "\n" + device.getAddress();
-						// Avoid duplicates
-						if (mListAdapter.getPosition(item) == -1) {
-							mListAdapter.add(item);
-						}
-					//}
+					final String item = device.getName() + "\n" + device.getAddress();
+					// Avoid duplicates
+					if (mListAdapter.getPosition(item) == -1) {
+						mListAdapter.add(item);
+					}
 				}
 			} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
 				setTitle(R.string.select_device);
@@ -73,17 +69,8 @@ public class ScannerActivity extends ActionBarActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		// Setup the window
 		setContentView(R.layout.activity_scanner);
-		setTitle("Swipe down to scan");
-		// Register for broadcasts when a device is discovered
-		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-		registerReceiver(broadcastReceiver, filter);
-		// Register for broadcasts when discovery has finished
-		filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-		registerReceiver(broadcastReceiver, filter);
-
+		//setTitle("Swipe down to scan");
 		mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
 		mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 			@Override
@@ -96,13 +83,37 @@ public class ScannerActivity extends ActionBarActivity {
 		mListAdapter = new ArrayAdapter<>(this,
 				android.R.layout.simple_list_item_multiple_choice);
 
-		ListView listView = (ListView) findViewById(R.id.listDevices);
+		final ListView listView = (ListView) findViewById(R.id.listDevices);
 		listView.setOnItemClickListener(onItemClickListener);
 		listView.setAdapter(mListAdapter);
+	}
 
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		// Make sure we're not doing discovery anymore
+		if (mBluetoothAdapter != null) {
+			mBluetoothAdapter.cancelDiscovery();
+		}
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		unregisterReceiver(broadcastReceiver);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		// Register for broadcasts when a device is discovered
+		registerReceiver(broadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+		// Register for broadcasts when discovery has finished
+		registerReceiver(broadcastReceiver,
+				new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
 		// Get the local Bluetooth adapter and paired devices
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-		Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+		final Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 		// If there are paired devices, add each one to the list
 		if (pairedDevices.size() > 0) {
 			for (BluetoothDevice device : pairedDevices) {
@@ -114,20 +125,6 @@ public class ScannerActivity extends ActionBarActivity {
 		}
 	}
 
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		Log.d(TAG, "onDestroy()");
-		// Make sure we're not doing discovery anymore
-		if (mBluetoothAdapter != null) {
-			mBluetoothAdapter.cancelDiscovery();
-		}
-		unregisterReceiver(broadcastReceiver);
-	}
-
-	/**
-	 * Start device discover with the BluetoothAdapter
-	 */
 	private void doDiscovery() {
 		setTitle(R.string.scanning);
 		// If we're already discovering, stop it
@@ -140,7 +137,6 @@ public class ScannerActivity extends ActionBarActivity {
 	public void onButtonAddClicked(View v) {
 		final ListView list = (ListView) findViewById(R.id.listDevices);
 		final SparseBooleanArray checkedItemPositions = list.getCheckedItemPositions();
-
 		for (int i = 0; i < checkedItemPositions.size(); i++) {
 			if (checkedItemPositions.valueAt(i)) {
 				// Get the row entry text
@@ -155,10 +151,6 @@ public class ScannerActivity extends ActionBarActivity {
 				}
 			}
 		}
-
-		final Intent intent;
-		intent = new Intent(this, ObjectManagerActivity.class);
-		startActivity(intent);
+		finish();
 	}
-
 }
