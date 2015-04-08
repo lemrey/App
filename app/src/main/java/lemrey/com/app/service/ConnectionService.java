@@ -29,14 +29,8 @@ public class ConnectionService extends Service {
 	private static final String TAG = "ConnectionService";
 	private final static Set<ConnectionThread> mConnections = new HashSet<>();
 	private static boolean mIsRunning = false;
-	private final MessageHandler mHandler;
-	private final HandlerThread mHandlerThread;
-
-	public ConnectionService() {
-		mHandlerThread = new HandlerThread("events");
-		mHandlerThread.start();
-		mHandler = new MessageHandler(mHandlerThread.getLooper());
-	}
+	private MessageHandler mHandler;
+	private LocalBroadcastManager mBroadcastManager;
 
 	public static boolean isRunning() {
 		return mIsRunning;
@@ -44,9 +38,24 @@ public class ConnectionService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		//Log.d(TAG, "onStartCommand");
-		mIsRunning = true;
-		startConnections();
+		Log.d(TAG, "onStartCommand");
+		if (!mIsRunning) {
+			Log.d(TAG, "Starting stuff");
+			mIsRunning = true;
+			mBroadcastManager = LocalBroadcastManager.getInstance(this);
+			final HandlerThread mHandlerThread = new HandlerThread("events");
+			mHandlerThread.start();
+			mHandler = new MessageHandler(mHandlerThread.getLooper());
+			final Handler connecter = new Handler();
+			connecter.post(new Runnable() {
+				@Override
+				public void run() {
+					startConnections();
+					connecter.postDelayed(this, 10000);
+				}
+			});
+		}
+
 		return START_STICKY;
 	}
 
@@ -65,15 +74,16 @@ public class ConnectionService extends Service {
 		return null;
 	}
 
-
 	/**
 	 * Starts connections to all known devices
 	 */
 	private void startConnections() {
-		Log.d(TAG, "Starting connections!");
+		//Log.d(TAG, "Starting connections! " + mConnections.size());
 		for (Device device : DeviceRegister.devices()) {
-			if (!device.isConnected()) {
+			if (device.status().equals(Device.ConnectionStatus.DISCONNECTED)) {
+				Log.d(TAG, "Starting connection to " + device.mAddress);
 				device.setConnecting();
+				mBroadcastManager.sendBroadcast(new Intent("bing"));
 				startConnection(device.mAddress);
 			}
 		}
@@ -96,13 +106,14 @@ public class ConnectionService extends Service {
 	/**
 	 * Removes the Thread for a given device
 	 */
-	private void stopThread(String deviceAddr) {
-		Log.d(TAG, "Stopping thread " + deviceAddr + " " + mConnections.size());
+	private synchronized void stopThread(String deviceAddr) {
+		//Log.d(TAG, "Trying to remove thread for device " + deviceAddr);
 		final Iterator<ConnectionThread> threadIterator = mConnections.iterator();
 		while (threadIterator.hasNext()) {
 			ConnectionThread thread = threadIterator.next();
 			//noinspection EqualsBetweenInconvertibleTypes
-			if (thread.equals(deviceAddr) && thread.isAlive()) {
+			if (thread.equals(deviceAddr)) {
+				Log.d(TAG, "Stopping thread " + thread.getId() + ", " + deviceAddr);
 				threadIterator.remove();
 			}
 		}
@@ -140,6 +151,7 @@ public class ConnectionService extends Service {
 	private void sendData(String deviceAddr, String data) {
 		for (ConnectionThread thread : mConnections) {
 			if (thread.mAddress.equals(deviceAddr)) {
+				// thread must be alive!
 				thread.write(data);
 			}
 		}
@@ -176,7 +188,8 @@ public class ConnectionService extends Service {
 					device.addFeatures(events, cmds);
 					//mConnectionCallback.onPayloadReceived(device.mAddress);
 					final Intent intent = new Intent("bing");
-					sendBroadcast(intent);
+					intent.putExtra("device", name);
+					mBroadcastManager.sendBroadcast(intent);
 				}
 				break;
 				case EVENT: {
@@ -192,7 +205,7 @@ public class ConnectionService extends Service {
 	}
 
 
-	public final class MessageHandler extends Handler {
+	private final class MessageHandler extends Handler {
 
 		public MessageHandler(Looper looper) {
 			super(looper);
@@ -206,16 +219,18 @@ public class ConnectionService extends Service {
 					// Change device status to connected
 					dev.setConnected();
 					final Intent intent = new Intent("bing");
-					LocalBroadcastManager.getInstance(ConnectionService.this).sendBroadcast(intent);
+					intent.putExtra("device", addr);
+					mBroadcastManager.sendBroadcast(intent);
 				}
 				break;
 				case 1: {   // DEVICE DISCONNECTED
+					dev.setDisconnected();
 					// Stop and remove thread
 					stopThread(addr);
 					// Change device status to disconnected
-					dev.setDisconnected();
 					final Intent intent = new Intent("bing");
-					LocalBroadcastManager.getInstance(ConnectionService.this).sendBroadcast(intent);
+					intent.putExtra("device", addr);
+					mBroadcastManager.sendBroadcast(intent);
 				}
 				break;
 				case 2: {   // INCOMING DATA
