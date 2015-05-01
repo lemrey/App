@@ -17,9 +17,16 @@ public class RuleBook implements Iterable<Rule> {
 		}
 	}
 
-	@Override
-	public Iterator<Rule> iterator() {
-		return mRules.iterator();
+	//TODO: currently one match per rule only!!
+	public static Rule match(String srcAddr, String eventName) {
+		for (Rule rule : mRules) {
+			//Log.d("RuleBook", "trying to match with " + rule.event.name + "add " + rule.srcAddr);
+			if (rule.event.name.equals(eventName)
+					&& rule.srcAddr.equals(srcAddr)) {
+				return rule;
+			}
+		}
+		return null;
 	}
 
 	/*public static Rule match(String srcAddr, Event event) {
@@ -33,19 +40,12 @@ public class RuleBook implements Iterable<Rule> {
 		return null;
 	}*/
 
-	//TODO: one match per rule only!!
-	public static Rule match(String srcAddr, String eventName) {
-		for (Rule rule : mRules) {
-			//Log.d("RuleBook", "trying to match with " + rule.event.name + "add " + rule.srcAddr);
-			if (rule.event.name.equals(eventName)
-					&& rule.srcAddr.equals(srcAddr)) {
-				return rule;
-			}
-		}
-		return null;
-	}
-
 	public static List<Rule> rules() {
 		return mRules;
+	}
+
+	@Override
+	public Iterator<Rule> iterator() {
+		return mRules.iterator();
 	}
 }
