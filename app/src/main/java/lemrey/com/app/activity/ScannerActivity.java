@@ -19,13 +19,16 @@ import android.widget.ListView;
 
 import java.util.Set;
 
-import lemrey.com.app.DeviceRegister;
 import lemrey.com.app.R;
+import lemrey.com.app.device.DeviceRegister;
 
 
 public class ScannerActivity extends ActionBarActivity {
 
 	private final String TAG = "ScannerActivity";
+	private BluetoothAdapter mBluetoothAdapter;
+	private ArrayAdapter<String> mListAdapter;
+	private SwipeRefreshLayout mSwipeRefreshLayout;
 	/**
 	 * A BroadcastReceiver that listens for discovered devices and changes the title
 	 * when discovery is finished
@@ -40,6 +43,7 @@ public class ScannerActivity extends ActionBarActivity {
 				// If it's already paired or listed, skip it
 				if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
 					//int  rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI,Short.MIN_VALUE);
+					// TODO: Should filter out items based on a prefix
 					final String item = device.getName() + "\n" + device.getAddress();
 					// Avoid duplicates
 					if (mListAdapter.getPosition(item) == -1) {
@@ -53,9 +57,6 @@ public class ScannerActivity extends ActionBarActivity {
 		}
 
 	};
-	private BluetoothAdapter mBluetoothAdapter;
-	private ArrayAdapter<String> mListAdapter;
-	private SwipeRefreshLayout mSwipeRefreshLayout;
 	// The on-click listener for all devices in the list
 	private AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
 
@@ -115,6 +116,7 @@ public class ScannerActivity extends ActionBarActivity {
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		final Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 		// If there are paired devices, add each one to the list
+		// TODO: Duplicates entries onResume
 		if (pairedDevices.size() > 0) {
 			for (BluetoothDevice device : pairedDevices) {
 				// Skip bonded devices already added to the DeviceRegister
