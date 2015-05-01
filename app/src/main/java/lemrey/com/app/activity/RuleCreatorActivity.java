@@ -20,10 +20,10 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import lemrey.com.app.DeviceRegister;
 import lemrey.com.app.R;
 import lemrey.com.app.adapter.DeviceFeatureAdapter;
 import lemrey.com.app.device.Device;
+import lemrey.com.app.device.DeviceRegister;
 import lemrey.com.app.device.Feature;
 import lemrey.com.app.device.FeatureParam;
 import lemrey.com.app.rule.Rule;
@@ -142,7 +142,8 @@ public class RuleCreatorActivity extends ActionBarActivity implements
 			//Log.d("Fragment", "OnCreateView " + mDeviceIndex + " adapter " + adapter);
 			mListView = (ListView) rootView.findViewById(R.id.listView);
 			mListView.setAdapter(new DeviceFeatureAdapter(getActivity(),
-					R.layout.list_objects_entry2, DeviceRegister.eventsForDeviceId(mDeviceIndex)
+					//R.layout.list_objects_entry2, DeviceRegister.eventsForDeviceId(mDeviceIndex)
+					android.R.layout.simple_list_item_1, DeviceRegister.eventsForDeviceId(mDeviceIndex)
 			));
 
 			mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -162,7 +163,8 @@ public class RuleCreatorActivity extends ActionBarActivity implements
 			}
 
 			mListView.setAdapter(new DeviceFeatureAdapter(getActivity(),
-					R.layout.list_objects_entry2, mFeaturesShown));
+					//R.layout.list_objects_entry2, mFeaturesShown));
+					android.R.layout.simple_list_item_1, mFeaturesShown));
 		}
 	}
 

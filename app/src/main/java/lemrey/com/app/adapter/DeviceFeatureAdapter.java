@@ -33,9 +33,11 @@ public class DeviceFeatureAdapter extends ArrayAdapter<Feature> {
 	@Override
 	public View getView(int position, View view, ViewGroup parent) {
 		if (view == null) {
-			view = mLayoutInflater.inflate(R.layout.list_objects_entry2, parent, false);
+			//view = mLayoutInflater.inflate(R.layout.list_objects_entry2, parent, false);
+			view = mLayoutInflater.inflate(android.R.layout.simple_list_item_1, parent, false);
 		}
-		final TextView label = (TextView) view.findViewById(R.id.labelName);
+		//final TextView label = (TextView) view.findViewById(R.id.labelName);
+		final TextView label = (TextView) view.findViewById(android.R.id.text1);
 		final Feature ft = mFeatures.get(position);
 		final Drawable icon;
 		switch (ft.paramType) {
@@ -53,6 +55,7 @@ public class DeviceFeatureAdapter extends ArrayAdapter<Feature> {
 		icon.setBounds(0, 0, 64, 64);
 
 		label.setText(ft.name);
+		//label.setTextSize(16);
 		label.setCompoundDrawablesRelative(null, null, icon, null);
 
 		return view;
