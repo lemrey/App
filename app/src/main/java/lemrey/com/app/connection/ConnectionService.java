@@ -1,4 +1,4 @@
-package lemrey.com.app.service;
+package lemrey.com.app.connection;
 
 import android.app.Service;
 import android.content.Intent;
@@ -18,8 +18,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import lemrey.com.app.DeviceRegister;
 import lemrey.com.app.device.Device;
+import lemrey.com.app.device.DeviceRegister;
 import lemrey.com.app.device.Feature;
 import lemrey.com.app.rule.Rule;
 import lemrey.com.app.rule.RuleBook;
@@ -51,9 +51,11 @@ public class ConnectionService extends Service {
 				@Override
 				public void run() {
 					startConnections();
-					connecter.postDelayed(this, 10000);
+					connecter.postDelayed(this, 16000);
 				}
 			});
+		} else {
+			startConnections();
 		}
 
 		return START_STICKY;
@@ -62,6 +64,7 @@ public class ConnectionService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		Log.d(TAG, "onDestroy");
 		mIsRunning = false;
 		// Shutdown threads
 		for (ConnectionThread thread : mConnections) {
@@ -83,8 +86,8 @@ public class ConnectionService extends Service {
 			if (device.status().equals(Device.ConnectionStatus.DISCONNECTED)) {
 				Log.d(TAG, "Starting connection to " + device.mAddress);
 				device.setConnecting();
-				mBroadcastManager.sendBroadcast(new Intent("bing"));
 				startConnection(device.mAddress);
+				mBroadcastManager.sendBroadcast(new Intent("bing"));
 			}
 		}
 	}
