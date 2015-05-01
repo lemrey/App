@@ -1,13 +1,9 @@
-package lemrey.com.app;
+package lemrey.com.app.device;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import lemrey.com.app.device.Device;
-import lemrey.com.app.device.Feature;
-
-public class DeviceRegister implements Iterable<Device> {
+public class DeviceRegister {
 
 	private final static List<Device> mDevices = new ArrayList<>();
 
@@ -16,8 +12,17 @@ public class DeviceRegister implements Iterable<Device> {
 	}
 
 	public static void addDevice(Device device) {
-		// Set doesn't allow duplicates
 		mDevices.add(device);
+	}
+
+	public static boolean deviceExists(String devAddr) {
+		boolean ret = false;
+		for (Device dev : mDevices) {
+			if (dev.mAddress.equals(devAddr)) {
+				ret = true;
+			}
+		}
+		return ret;
 	}
 
 	public static Device get(int i) {
@@ -32,7 +37,8 @@ public class DeviceRegister implements Iterable<Device> {
 
 	public static Device device(String address) {
 		for (Device d : mDevices) {
-			// We are comparing the device address
+			// We are comparing the device address, since we override equals
+			//noinspection EqualsBetweenInconvertibleTypes
 			if (d.equals(address)) {
 				return d;
 			}
@@ -46,10 +52,5 @@ public class DeviceRegister implements Iterable<Device> {
 
 	public static List<Feature> cmdsForDeviceId(int i) {
 		return mDevices.get(i).commands();
-	}
-
-	@Override
-	public Iterator<Device> iterator() {
-		return mDevices.iterator();
 	}
 }
