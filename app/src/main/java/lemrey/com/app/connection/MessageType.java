@@ -1,4 +1,4 @@
-package lemrey.com.app.service;
+package lemrey.com.app.connection;
 
 /**
  * Created by lemrey on 3/7/2015.
