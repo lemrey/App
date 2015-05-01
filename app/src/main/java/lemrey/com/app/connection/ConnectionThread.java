@@ -1,4 +1,4 @@
-package lemrey.com.app.service;
+package lemrey.com.app.connection;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
