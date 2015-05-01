@@ -30,7 +30,7 @@
         </activity>
 
         <service
-            android:name=".service.ConnectionService"
+            android:name=".connection.ConnectionService"
             android:enabled="true"
             android:exported="false">
         </service>
