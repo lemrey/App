@@ -10,9 +10,9 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import lemrey.com.app.DeviceRegister;
 import lemrey.com.app.R;
 import lemrey.com.app.device.Device;
+import lemrey.com.app.device.DeviceRegister;
 import lemrey.com.app.device.Feature;
 import lemrey.com.app.device.FeatureType;
 
@@ -21,13 +21,13 @@ import lemrey.com.app.device.FeatureType;
  */
 
 
-public class DeviceDetailsAdapter extends BaseExpandableListAdapter {
+public class DeviceAdapter extends BaseExpandableListAdapter {
 
 	private final Activity mActivity;
 	private final List<Device> mDevices;
 	private final LayoutInflater mLayoutInflater;
 
-	public DeviceDetailsAdapter(Activity activity) {
+	public DeviceAdapter(Activity activity) {
 		mActivity = activity;
 		mDevices = DeviceRegister.devices();
 		mLayoutInflater = activity.getLayoutInflater();
@@ -71,10 +71,14 @@ public class DeviceDetailsAdapter extends BaseExpandableListAdapter {
 
 	@Override
 	public View getGroupView(int groupPosition, boolean isExpanded,
-	                         View convertView, ViewGroup parent) {
-		View rowView = mLayoutInflater.inflate(R.layout.list_objects_entry, parent, false);
-		final TextView labelName = (TextView) rowView.findViewById(R.id.labelName);
-		// Set text and icon
+	                         View view, ViewGroup parent) {
+		//if (view == null) {
+		//view = mLayoutInflater.inflate(R.layout.list_objects_entry, parent, false);
+		// Won't update if we check for null??
+		view = mLayoutInflater.inflate(android.R.layout.simple_list_item_1, parent, false);
+		//}
+		//final TextView labelName = (TextView) view.findViewById(R.id.labelName);
+		final TextView labelName = (TextView) view.findViewById(android.R.id.text1);
 		final Device device = mDevices.get(groupPosition);
 		labelName.setText(device.name());
 
@@ -90,48 +94,54 @@ public class DeviceDetailsAdapter extends BaseExpandableListAdapter {
 				img = mActivity.getResources().getDrawable(R.drawable.ic_disconnected);
 				break;
 		}
-		img.setBounds(0, 0, 64, 64);
-		labelName.setCompoundDrawablesRelative(null, null, img, null);
 
-		return rowView;
+		img.setBounds(0, 0, 64, 64);
+		labelName.setTextSize(22);
+		labelName.setPadding(88, 0, 0, 0);
+		labelName.setCompoundDrawablesRelative(null, null, img, null);
+		return view;
 	}
 
 	@Override
 	public View getChildView(int groupPosition, final int childPosition,
-	                         boolean isLastChild, View convertView, ViewGroup parent) {
-		if (convertView == null) {
-			convertView = mLayoutInflater.inflate(R.layout.list_object_details, null);
+	                         boolean isLastChild, View view, ViewGroup parent) {
+		if (view == null) {
+			//view = mLayoutInflater.inflate(R.layout.list_object_details, parent, false);
+			view = mLayoutInflater.inflate(android.R.layout.simple_list_item_1, parent, false);
 		}
-		final String name;
+
 		final Feature child = mDevices.get(groupPosition).features().get(childPosition);
-		final TextView label = (TextView) convertView.findViewById(R.id.textView1);
+		//final TextView label = (TextView) view.findViewById(R.id.textView1);
+		final TextView label = (TextView) view.findViewById(android.R.id.text1);
+
+		final String name = child.name;
 		final Drawable iconDirection;
 		final Drawable iconData;
 
-		name = child.name;
-		//Log.d("adapterzzz", name + " is a " + child.type);
 		if (child.type.equals(FeatureType.EVENT)) {
 			iconDirection = mActivity.getResources().getDrawable(R.drawable.ic_event);
 		} else {
 			iconDirection = mActivity.getResources().getDrawable(R.drawable.ic_cmd);
 		}
+
 		switch (child.paramType) {
 			default:
-				iconData = mActivity.getResources().getDrawable(R.drawable.ic_signal);
+				iconData = mActivity.getResources().getDrawable(R.drawable.ic_exclamation);
 				break;
 			case NUMBER:
 				iconData = mActivity.getResources().getDrawable(R.drawable.ic_pi);
 				break;
 			case TEXT:
-				iconData = mActivity.getResources().getDrawable(R.drawable.ic_paperplane);
+				iconData = mActivity.getResources().getDrawable(R.drawable.ic_message);
 				break;
 		}
-		iconDirection.setBounds(0, 0, 64, 64);
+		iconDirection.setBounds(0, 0, 48, 48);
 		iconData.setBounds(0, 0, 48, 48);
 
 		label.setText(name);
+		label.setCompoundDrawablePadding(16);
 		label.setCompoundDrawablesRelative(iconDirection, null, iconData, null);
-		return convertView;
+		return view;
 	}
 
 	@Override
