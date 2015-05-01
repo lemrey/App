@@ -12,10 +12,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ExpandableListView;
 
-import lemrey.com.app.DeviceRegister;
 import lemrey.com.app.R;
-import lemrey.com.app.adapter.DeviceDetailsAdapter;
-import lemrey.com.app.service.ConnectionService;
+import lemrey.com.app.adapter.DeviceAdapter;
+import lemrey.com.app.connection.ConnectionService;
+import lemrey.com.app.device.DeviceRegister;
 
 
 public class ObjectManagerActivity extends ActionBarActivity {
@@ -23,7 +23,7 @@ public class ObjectManagerActivity extends ActionBarActivity {
 	private static final String TAG = "ObjectManagerActivity";
 	private final DeviceStatus mDeviceCallbacks = new DeviceStatus();
 	private LocalBroadcastManager mBroadcastManager;
-	private DeviceDetailsAdapter mListAdapter;
+	private DeviceAdapter mListAdapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +31,7 @@ public class ObjectManagerActivity extends ActionBarActivity {
 		setContentView(R.layout.activity_object_manager);
 		// The broadcast manager which will receive connection callbacks from the ConnectionService
 		mBroadcastManager = LocalBroadcastManager.getInstance(this);
-		mListAdapter = new DeviceDetailsAdapter(this);
+		mListAdapter = new DeviceAdapter(this);
 		ExpandableListView mListView = (ExpandableListView) findViewById(R.id.listObjects);
 		mListView.setAdapter(mListAdapter);
 		mListView.setEmptyView(findViewById(R.id.empty));
@@ -80,18 +80,19 @@ public class ObjectManagerActivity extends ActionBarActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
+		mBroadcastManager.registerReceiver(mDeviceCallbacks, new IntentFilter("bing"));
+		startService(new Intent(this, ConnectionService.class));
 		mListAdapter.notifyDataSetChanged();
 		invalidateOptionsMenu();
-		mBroadcastManager.registerReceiver(mDeviceCallbacks, new IntentFilter("bing"));
 	}
 
 	private class DeviceStatus extends BroadcastReceiver {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if (intent.getAction().equals("bing")) {
-				Log.d(TAG, intent.getStringExtra("device") + " connected");
+				Log.d(TAG, "Bing!");
+				//intent.getStringExtra("device") + " connected");
 				mListAdapter.notifyDataSetChanged();
-				// Do stuff - maybe update my view based on the changed DB contents
 			}
 		}
 	}
