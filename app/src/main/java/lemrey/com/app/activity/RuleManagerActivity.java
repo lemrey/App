@@ -6,7 +6,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ExpandableListView;
+import android.widget.ListView;
 
 import lemrey.com.app.R;
 import lemrey.com.app.adapter.RuleAdapter;
@@ -22,8 +22,9 @@ public class RuleManagerActivity extends ActionBarActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_rule_manager);
 
-		final ExpandableListView listRules = (ExpandableListView) findViewById(R.id.listRules);
-		mRuleAdapter = new RuleAdapter(this, RuleBook.rules());
+		//final ExpandableListView listRules = (ExpandableListView) findViewById(R.id.listRules);
+		final ListView listRules = (ListView) findViewById(R.id.listRules);
+		mRuleAdapter = new RuleAdapter(this, R.layout.list_rule_entry, RuleBook.rules());
 		listRules.setAdapter(mRuleAdapter);
 		listRules.setEmptyView(findViewById(R.id.empty));
 	}
