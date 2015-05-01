@@ -45,7 +45,7 @@ public class DeviceFeatureAdapter extends ArrayAdapter<Feature> {
 				icon = mContext.getResources().getDrawable(R.drawable.ic_pi);
 				break;
 			case TEXT:
-				icon = mContext.getResources().getDrawable(R.drawable.ic_paperplane);
+				icon = mContext.getResources().getDrawable(R.drawable.ic_message);
 				break;
 			default:
 				icon = mContext.getResources().getDrawable(R.drawable.ic_signal);
